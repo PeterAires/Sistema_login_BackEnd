@@ -1,20 +1,25 @@
-import { FastifyInstance } from 'fastify';
-import { z } from 'zod';
-import brcypt from "bcrypt";
-import { PrismaClient } from '@prisma/client';
+import { FastifyInstance } from "fastify";
+import { z } from "zod";
+import bcrypt from "bcrypt"; // Correção do nome
+import cookie from "@fastify/cookie";
+import { PrismaClient } from "@prisma/client";
+import AuthService from "../services/auth-service";
 
 const prisma = new PrismaClient();
 
 export async function Login(app: FastifyInstance) {
+  // Registrar o plugin de cookies
+  app.register(cookie);
+
   // Definindo o esquema Zod
   const userSchema = z.object({
     email: z.string().email(),
-    password: z.string().min(4)
+    password: z.string().min(4),
   });
 
   // Definindo a rota
-  app.get('/portal/login', async (request, reply) => {
-    const { email, password } = request.params;
+  app.post("/portal/login", async (request, reply) => {
+    const { email, password } = request.body;
 
     // Validação manual
     const parseResult = userSchema.safeParse({ email, password });
@@ -22,21 +27,37 @@ export async function Login(app: FastifyInstance) {
       return reply.status(400).send(parseResult.error);
     }
 
+    const lowerEmail = email.toLowerCase();
+
     const user = await prisma.user.findUnique({
       where: {
-        email,
-      }
-    })
+        email: lowerEmail,
+      },
+    });
+
     if (!user) {
-      throw new Error('Usuario não encontrado') 
+      return reply.status(404).send({ error: "Usuário não encontrado" }); // Uso de reply
     }
 
-    const isMath = await brcypt.compare(password, user.password)
-    if (!isMath) {
-      console.log('senha ou email invalido')
+    const isMatch = await bcrypt.compare(password, user.password); // Correção do nome
+    if (!isMatch) {
+      return reply.status(401).send({ error: "Senha ou e-mail inválido" }); // Uso de reply
     }
-    console.log('login efetuado')
+
+    const token = await AuthService.CreateSessionToken({
+      sub: user.id,
+      name: user.name,
+      email: user.email,
+    });
+
     // Lógica aqui
+    reply.setCookie("authToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Apenas em produção
+      maxAge: 86400, // 1 dia
+      path: "/", // Disponível em todo o domínio
+    });
+
     return { userId: user.id };
   });
 }
