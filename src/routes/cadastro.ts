@@ -9,22 +9,37 @@ export async function Cadastro(app: FastifyInstance) {
   // Definindo o esquema Zod
   const userSchema = z.object({
     name: z.string().min(3),
-    email: z.string().email().transform(value => value.toLowerCase()),
-    password: z.string().min(4)
+    email: z
+      .string()
+      .email()
+      .transform((value) => value.toLowerCase()),
+    password: z.string().min(4),
   });
 
   // Definindo a rota
   app.post("/portal/cadastro", async (request, reply) => {
     const { name, email, password } = request.body;
 
-    // Validação manual
+    //Validação zod
     const parseResult = userSchema.safeParse({ email, password, name });
     if (!parseResult.success) {
-      return reply.status(400).send(parseResult.error);
+      return reply.status(400).send({ message: "Dados inválidos" });
     }
-    const lowerEmail = email.toLowerCase()
+
+    const lowerEmail = email.toLowerCase();
+
+    const userEmail = await prisma.user.findUnique({
+      where: {
+        email: lowerEmail,
+      },
+    });
+    if (userEmail) {
+      return reply.status(400).send({ message: "Usuario ja cadastrado" });
+    }
+
     const hashPassword = await brcypt.hash(password, 10);
-    const user = await prisma.user.create({
+
+    await prisma.user.create({
       data: {
         name,
         email: lowerEmail,
