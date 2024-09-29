@@ -50,7 +50,7 @@ export async function Login(app: FastifyInstance) {
       email: user.email,
     });
 
-    // Lógica aqui
+    // Lógica aqui - Cookie Criado
     reply.setCookie("authToken", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // Apenas em produção
