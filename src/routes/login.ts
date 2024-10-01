@@ -1,7 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import bcrypt from "bcrypt"; // Correção do nome
-import cookie from "@fastify/cookie";
 import { PrismaClient } from "@prisma/client";
 import AuthService from "../services/auth-service";
 
@@ -9,7 +8,7 @@ const prisma = new PrismaClient();
 
 export async function Login(app: FastifyInstance) {
   // Registrar o plugin de cookies
-  app.register(cookie);
+  
 
   // Definindo o esquema Zod
   const userSchema = z.object({
