@@ -14,7 +14,7 @@ export async function Login(app: FastifyInstance) {
   // Definindo o esquema Zod
   const userSchema = z.object({
     email: z.string().email(),
-    password: z.string().min(4),
+    password: z.string().min(6),
   });
 
   // Definindo a rota
@@ -36,12 +36,12 @@ export async function Login(app: FastifyInstance) {
     });
 
     if (!user) {
-      return reply.status(404).send({ error: "Usuário não encontrado" }); // Uso de reply
+      return reply.status(401).send({ error: "Senha ou e-mail inválido." }); // Uso de reply
     }
 
     const isMatch = await bcrypt.compare(password, user.password); // Correção do nome
     if (!isMatch) {
-      return reply.status(401).send({ error: "Senha ou e-mail inválido" }); // Uso de reply
+      return reply.status(401).send({ error: "Senha ou e-mail inválido." }); // Uso de reply
     }
 
     const token = await AuthService.CreateSessionToken({
