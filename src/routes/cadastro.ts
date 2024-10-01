@@ -8,12 +8,11 @@ const prisma = new PrismaClient();
 export async function Cadastro(app: FastifyInstance) {
   // Definindo o esquema Zod
   const userSchema = z.object({
-    name: z.string().min(3),
+    name: z.string().min(3).trim(),
     email: z
       .string()
-      .email()
-      .transform((value) => value.toLowerCase()),
-    password: z.string().min(4),
+      .email().trim(),
+    password: z.string().min(6),
   });
 
   // Definindo a rota
@@ -46,6 +45,6 @@ export async function Cadastro(app: FastifyInstance) {
         password: hashPassword,
       },
     });
-    reply.code(201).send({ message: "Cadastro realizado com sucesso. " });
+    return reply.code(201).send({ message: "Cadastro realizado com sucesso. " });
   });
 }

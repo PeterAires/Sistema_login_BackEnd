@@ -20,8 +20,11 @@
     "@prisma/client": "^5.20.0",
     "bcrypt": "^5.1.1",
     "fastify": "^5.0.0",
+    "fastify-cors": "^6.1.0",
     "fastify-zod": "^1.4.0",
+    "install": "^0.13.0",
     "jose": "^5.9.3",
+    "npm": "^10.8.3",
     "sistema_login_back": "file:",
     "zod": "^3.23.8"
   }
