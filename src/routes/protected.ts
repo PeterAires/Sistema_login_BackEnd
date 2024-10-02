@@ -7,7 +7,6 @@ export async function Protected(app: FastifyInstance) {
   app.get("/protected", async (request, reply) => {
     const sessionValid = await AuthService.isSessionValid(request);
     if (!sessionValid) {
-      console.log("Token inválido");
       return reply.status(401).send({ error: "Não autorizado" });
     }
     return reply.send({ message: "Autenticação bem sucedida." });

@@ -22,20 +22,17 @@ async function CreateSessionToken(payload = {}) {
 }
 
 async function isSessionValid(request: FastifyRequest) {
-  const sessionCookie = request.cookies.session;
-
-  if (sessionCookie) {
-    const { value } = sessionCookie;
-    const { exp } = await openSessionToken(value);
+  const sessionCookie = request.cookies.authToken;
+  if (!sessionCookie) {
+    console.log("Não há token de seção");
+    return false;
+  }
+    const { exp } = await openSessionToken(sessionCookie);
     if (!exp) {
-      return;
+      return false
     }
     const currentDate = Math.floor(Date.now() / 1000);
-
     return exp > currentDate;
-  }
-
-  return false;
 }
 
 const AuthService = {
